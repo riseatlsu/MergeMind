@@ -19,7 +19,8 @@ const fallbackMessage = fs.readFileSync('./message.md', 'utf8')
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 // test for GITHUB API KEY
-console.log('API Key starts with:', process.env.OPENAI_API_KEY?.slice(0, 8));
+console.log('API Key starts with:', process.env.OPENAI_API_KEY?.slice(0, 10
+));
 
 const app = new App({
   appId,
