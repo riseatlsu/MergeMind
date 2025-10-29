@@ -8,6 +8,7 @@ import OpenAI from 'openai' // official openai npm client
 
 dotenv.config()
 
+// Secret info from .env or public info
 const appId = process.env.APP_ID
 const privateKeyPath = process.env.PRIVATE_KEY_PATH
 const privateKey = fs.readFileSync(privateKeyPath, 'utf8')
@@ -18,10 +19,7 @@ const fallbackMessage = fs.readFileSync('./message.md', 'utf8')
 // initialize OpenAI client (uses OPENAI_API_KEY from .env)
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-// test for GITHUB API KEY
-console.log('API Key starts with:', process.env.OPENAI_API_KEY?.slice(0, 10
-));
-
+// Constructed and configured app using Octokit package
 const app = new App({
   appId,
   privateKey,
@@ -35,6 +33,7 @@ const app = new App({
   })
 })
 
+// Debug sanity test for self authentication
 const { data } = await app.octokit.request('/app')
 app.octokit.log.debug(`Authenticated as '${data.name}'`)
 
@@ -92,13 +91,29 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
 
   console.log(`Received a pull request event for #${pr.number} in ${repoFullName}`)
 
+  // Checks the merge status for the pull request
+  if (pr.mergeable === false || pr.mergeable_state === "dirty") {
+      await octokit.issues.createComment({
+        owner,
+        repo,
+        issue_number: pr.number,
+        body: `Hey @${pr.user.login}, this pull request currently has **merge conflicts**.  
+                Please resolve them before merging.`,
+      });
+    }
+
   // Build context for AI
   const context = {
     prTitle: pr.title || '',
     prBody: pr.body || '',
     author: pr.user?.login || 'unknown',
-    repoFullName
+    repoFullName,
+    number: pr.number || '',
+    mergeStatus: pr.mergeable_state
   }
+
+  // context for testing purposes
+  console.log("✅ PR context captured:", context);
 
   // Generate message (or fallback)
   const body = await generatePRMessage(context)
