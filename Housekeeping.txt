@@ -1,0 +1,3 @@
+Bot has been Created
+Read Paper
+Improve the bot around predicting time taken to do a pull request
