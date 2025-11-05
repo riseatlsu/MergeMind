@@ -43,7 +43,7 @@ app.octokit.log.debug(`Authenticated as '${data.name}'`)
  * - Introduces itself as "MergeMind assistant".
  * - Invites responses via PR comments.
  */
-async function generatePRMessage({ prTitle, prBody, author, repoFullName }) {
+async function generatePRMessage({ prTitle, prBody, author, repoFullName, mergeStatus }) {
   // Compose prompt/messages for clarity
   const systemPrompt = `You are MergeMind, a GitHub assistant. When creating a comment for a newly opened pull request, introduce yourself clearly and concisely as "MergeMind assistant". 
 Explain briefly what you can do and that the maintainers or PR author can respond by leaving comments. Keep it friendly and short (approx 4-8 sentences). Avoid adding code diffs or making commits — stick to an intro & guide for next steps.`;
@@ -52,12 +52,15 @@ Explain briefly what you can do and that the maintainers or PR author can respon
 PR author: ${author}
 PR body: ${prBody ? prBody.slice(0, 2000) : "<no body provided>"}
 Repository: ${repoFullName}
+Merge Status: ${mergeStatus}
 
 Write a short GitHub comment (markdown allowed) that:
  - Introduces itself as MergeMind assistant
  - Briefly says it can help review / answer questions and accept simple instructions in comments
  - Mentions it received this PR and will follow up in the thread
  - Keeps the tone friendly and professional.
+ - Attempt to estimate the time in minutes it would take to resolve this pull request, 
+   make sure that this part is a line away from the introduction.
 Return only the comment text (no extra explanation).`
 
   try {
